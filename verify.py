@@ -377,6 +377,12 @@ class SupplementaryPayslip(Payslip):
             "Stock award social security withholding",
             stated_withholding,
             expected_withholding,
+            # Shares Withheld is rounded to the nearest thousandth of a share:
+            # Shares Withheld = round(Shares Awarded * Withholding Rate, 3)
+            # Withheld Value = (Shares Withheld * Share FMV * FX-Rate)
+            # Therefore, allow tolerance of the value of a thousandth of a share
+            # assuming a max share value price 1000 CHF ($MSFT=~290 CHF 01.05.2023)
+            tolerance=Decimal(1.0),
         )
 
     def validate(self):
