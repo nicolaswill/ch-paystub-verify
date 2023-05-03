@@ -249,8 +249,9 @@ class Payslip:
 
     def __get_dataframe(self):
         df = tabula.read_pdf(self.__payslip_path, pages="all")[0]
+        columns_to_drop = [c for c in df.columns if "Unnamed" in c]
         df.drop(
-            labels=["Unnamed: 0", "Unnamed: 1", "Unnamed: 2", "Unnamed: 3"],
+            labels=columns_to_drop,
             axis=1,
             inplace=True,
         )
