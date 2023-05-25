@@ -404,9 +404,13 @@ class WagePayslip(Payslip):
         self.supplements = supplements
         # ensure that this payslip and its supplements all have the same date
         for supplement in supplements:
-            if supplement.payslip_date != self.payslip_date:
+            if (
+                supplement.payslip_date.month != self.payslip_date.month
+                or supplement.payslip_date.year != self.payslip_date.year
+            ):
                 raise ValueError(
-                    f"Supplement payslip date {supplement.payslip_date} does not match primary payslip date {self.payslip_date}."
+                    f"Supplement payslip month/year ({supplement.payslip_date.month}/{supplement.payslip_date.year})"
+                    f" does not match primary payslip month ({self.payslip_date.month}/{self.payslip_date.year})."
                 )
         # validate wage payslip format
         if not self.row_exists("Monthly wage"):
