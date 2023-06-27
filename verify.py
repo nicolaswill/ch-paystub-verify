@@ -23,7 +23,17 @@ def round_05(num: Decimal) -> Decimal:
 
 
 def str_to_dec(s: str) -> Decimal:
-    return Decimal(s.replace("'", "").replace("%", "").strip())
+    replacement_pairs = [
+        ("'", ""),
+        ("%", ""),
+        (" ", ""),
+        (",", "."),
+    ]
+
+    for pair in replacement_pairs:
+        s = s.replace(pair[0], pair[1])
+
+    return Decimal(s.strip())
 
 
 def print_pass(msg: str):
@@ -344,7 +354,7 @@ class Payslip:
         # note: don't use .sum as there is an internal float64 conversion
         result = Decimal(0)
         for x in section[col].tolist():
-            result += Decimal(str(x).replace("'", ""))
+            result += str_to_dec(str(x))
         return result
 
 
