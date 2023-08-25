@@ -243,17 +243,24 @@ known_deduction_entries: list[str] = list(
 
 
 class Payslip:
-    def __init__(self, payslip_path: str, employee: EmployeeData):
+    def __init__(self, payslip_path: str, employee: EmployeeData, date_format: str):
         self.__payslip_path = payslip_path
         self.payslip_name = Path(payslip_path).name
+        self.date_format = date_format
+        self.employee = employee
         self.payslip_date = self.__get_date()
         self.df = self.__get_dataframe()
-        self.employee = employee
 
     def __get_date(self):
         reader = PdfReader(self.__payslip_path)
+        if self.date_format == "d-m-Y":
+            date_regex = r"\d{2}(\.|-)\d{2}(\.|-)\d{4}"
+        elif self.date_format == "Ym" or self.date_format == "Y-m":
+            date_regex = r"\d{4}(\.|-)?\d{2}"
+        else:
+            raise ValueError(f"Regex not implemented for date format: {self.date_format}")
         raw_payslip_date = re.search(
-            r"\d{2}(\.|-)\d{2}(\.|-)\d{4}", reader.pages[0].extract_text()
+            date_regex, reader.pages[0].extract_text()
         )[0]
         return datetime.datetime.strptime(raw_payslip_date, "%d.%m.%Y").date()
 
@@ -359,8 +366,8 @@ class Payslip:
 
 
 class SupplementaryPayslip(Payslip):
-    def __init__(self, payslip_path: str, employee: EmployeeData):
-        super().__init__(payslip_path, employee)
+    def __init__(self, payslip_path: str, employee: EmployeeData, date_format: str):
+        super().__init__(payslip_path, employee, date_format)
         if self.row_exists("Monthly wage"):
             raise ValueError(
                 "Supplementary payslip input contains a 'Monthly wage' row."
@@ -408,9 +415,10 @@ class WagePayslip(Payslip):
         self,
         payslip_path: str,
         employee: EmployeeData,
+        date_format: str,
         supplements: list[SupplementaryPayslip] = None,
     ):
-        super().__init__(payslip_path, employee)
+        super().__init__(payslip_path, employee, date_format)
         self.supplements = supplements
         # ensure that this payslip and its supplements all have the same date
         for supplement in supplements:
@@ -762,6 +770,14 @@ def parse_args():
     parser.add_argument(
         "payslip_path", type=Path, help="Path to primary input payslip to verify."
     )
+    # Formatted according to https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+    parser.add_argument(
+        "-df",
+        "--date_format",
+        type=str,
+        default="d-m-Y",
+        help="The format of the payslip date found in the filename.",
+    )
     parser.add_argument(
         "-y",
         "--birth_year",
@@ -807,11 +823,11 @@ def main():
     # parse stock payslip if one is provided
     # note: multiple supplementary payslips are supported but don't seem to occur in practice
     supplements = (
-        [SupplementaryPayslip(args.stock_payslip_path, employee)]
+        [SupplementaryPayslip(args.stock_payslip_path, employee, args.date_format)]
         if args.stock_payslip_path
         else []
     )
-    wage_payslip = WagePayslip(args.payslip_path, employee, supplements)
+    wage_payslip = WagePayslip(args.payslip_path, employee, args.date_format, supplements)
     wage_payslip.validate()
 
 
