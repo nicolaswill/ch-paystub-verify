@@ -62,6 +62,7 @@ def get_oasi_rate(year: int) -> Decimal:
         2021: Decimal("0.05300"),
         2022: Decimal("0.05300"),
         2023: Decimal("0.05300"),
+        2024: Decimal("0.05300"),
     }
     return OASI_rates[year]
 
@@ -83,6 +84,7 @@ def get_bvg_minimum_salary(year: int) -> Decimal:
         2021: Decimal("21510"),
         2022: Decimal("21510"),
         2023: Decimal("22050"),
+        2024: Decimal("22050"),
     }
     return BVG_minimum_salaries[year]
 
@@ -100,6 +102,7 @@ def get_ahv_coordination_deduction(year: int) -> Decimal:
         2021: Decimal("25095"),
         2022: Decimal("25095"),
         2023: Decimal("25725"),
+        2024: Decimal("25725"),
     }
     return AHV_coordination_deductions[year]
 
@@ -378,6 +381,7 @@ class SupplementaryPayslip(Payslip):
             2021: Decimal(0.0623),  # unconfirmed
             2022: Decimal(0.0623),  # confirmed
             2023: Decimal(0.0630),  # confirmed
+            2024: Decimal(0.0630),  # unconfirmed
         }
         stock_award_withholding_rate = stock_award_withholding_rate_by_year[
             self.payslip_date.year
