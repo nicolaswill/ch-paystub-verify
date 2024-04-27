@@ -439,6 +439,39 @@ class WagePayslip(Payslip):
             sum += payslip.get_val(row, col)
         return sum
 
+    def validate_espp_gain(self):
+        """
+        Validates the employee stock purchase program (ESPP) gain.
+
+        This method checks for the following three potential reported ESPP gain issues:
+        1. The month IS January, April, July, or October, and ESPP gain is non-zero.
+        2. The month IS NOT January, April, July, or October, and ESPP gain is zero (or missing).
+        3. The ESPP gain is larger than 10% of the max ESPP contribution (ignore exchange rate considerations)
+
+        Note: For heuristic #3, a warning will always be produced for a monthly gross income of over ~80000 CHF
+        """
+        # validate ESPP gain
+        espp_gain = self.get_val("ESPP gain")
+
+        if self.payslip_date.month in [1, 4, 7, 10]:
+            if espp_gain == Decimal(0):
+                print_warn(
+                    f"ESPP gain is zero in a month where ESPP gain should be non-zero. Verify correctness."
+                )
+        else:
+            if espp_gain != Decimal(0):
+                print_warn(
+                    f"ESPP gain is non-zero in a month where ESPP gain should be zero. Verify correctness."
+                )
+        # assume CHF and USD are 1:1 for this heuristic
+        max_espp_contribution = Decimal(25000)
+        # 10% discount = 11.1111% gain (assume CHF->USD = 1:1)
+        max_espp_gain = round_05(max_espp_contribution / Decimal(9))
+        if espp_gain > max_espp_gain:
+            self.validate_calc(
+                "ESPP gain exceeds maximum annual ESPP gain", espp_gain, max_espp_gain
+            )
+
     def validate_gross_salary(self) -> Tuple[Decimal, Decimal]:
         """
         Validates the gross salary. Returns a tuple of the gross salary and social-insurance salary.
@@ -746,6 +779,8 @@ class WagePayslip(Payslip):
             gross_salary_si,
             gross_salary_non_cash,
         ) = self.validate_gross_salary()
+
+        self.validate_espp_gain()
 
         self.validate_net_salary_calculations(gross_salary, gross_salary_si)
 
