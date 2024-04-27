@@ -446,9 +446,7 @@ class WagePayslip(Payslip):
         This method checks for the following three potential reported ESPP gain issues:
         1. The month IS January, April, July, or October, and ESPP gain is non-zero.
         2. The month IS NOT January, April, July, or October, and ESPP gain is zero (or missing).
-        3. The ESPP gain is larger than 10% of the max ESPP contribution (ignore exchange rate considerations)
-
-        Note: For heuristic #3, a warning will always be produced for a monthly gross income of over ~80000 CHF
+        3. The ESPP gain is larger than a 10% discount of the max ESPP contribution (ignore exchange rate considerations)
         """
         # validate ESPP gain
         espp_gain = self.get_val("ESPP gain")
