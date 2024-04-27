@@ -24,7 +24,6 @@ def get_qlt_zip_url_from_2024(year: int) -> str:
 def main():
     args = parse_args()
 
-    # properly declare the dict above
     year_format_mapping = {
         2021: get_qlt_zip_url_pre_2024,
         2022: get_qlt_zip_url_pre_2024,
