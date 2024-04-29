@@ -4,10 +4,11 @@ import itertools
 import qst
 import re
 import tabula
+import warnings
 from typing import Tuple
 from dataclasses import dataclass
 from pathlib import Path
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from decimal import Decimal
 
 CRED = "\033[91m"
@@ -261,7 +262,9 @@ class Payslip:
         return datetime.datetime.strptime(raw_payslip_date, "%d.%m.%Y").date()
 
     def __get_dataframe(self):
-        df = tabula.read_pdf(self.__payslip_path, pages="all")[0]
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=FutureWarning)
+            df = tabula.read_pdf(self.__payslip_path, pages="all")[0]
         columns_to_drop = [c for c in df.columns if "Unnamed" in c]
         df.drop(
             labels=columns_to_drop,
