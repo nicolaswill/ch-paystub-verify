@@ -18,4 +18,4 @@ tabula-py==2.7.0
 tomli==2.0.1
 typing_extensions==4.5.0
 tzdata==2023.3
-urllib3==1.26.18
+urllib3==1.26.19
